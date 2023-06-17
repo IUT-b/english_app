@@ -18,6 +18,10 @@ use App\Http\Controllers\Api\V1\LineController;
 // メッセージ送信
 Route::get('/v1/delivery', [LineController::class, 'delivery']);
 
+// Webhookでメッセージを受け取る受け口
+Route::post('/v1/callback', [LineController::class, 'callback'])
+    ->middleware('signedbyline');
+
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
