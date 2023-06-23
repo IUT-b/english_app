@@ -8,6 +8,7 @@ use App\Services\ReplyMessageGenerator;
 use App\Services\RequestParser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Models\Message;
 
 class LineController extends Controller
 {
@@ -21,10 +22,10 @@ class LineController extends Controller
         return response()->json(['message' => 'sent']);
     }
 
-    // メッセージを受け取って返信
+    // メッセージを受け取って保存
     public function callback(Request $request)
     {
-        // 1. 受け取った情報からメッセージの情報を取り出す
+        // 受け取った情報からメッセージの情報を取り出す
         $parser = new RequestParser($request->getContent());
         $recievedMessages = $parser->getRecievedMessages();
 
@@ -32,14 +33,18 @@ class LineController extends Controller
             return response()->json(['message' => 'received(no events)']);
         }
 
-        $replyMessageGenerator = new ReplyMessageGenerator();
-        $deliverer = new Deliverer(env('LINE_CHANNEL_ACCESS_TOKEN'), env('LINE_CHANNEL_SECRET'));
+        // メッセージをDBに保存
         foreach ($recievedMessages as $recievedMessage) {
-            // 2. 受け取ったメッセージの内容から返信するメッセージを生成
-            $replyMessage = $replyMessageGenerator->generate($recievedMessage->getText());
+            // 入力内容のチェック
+            // ルールに一致しない入力の場合は、自動的に入力画面を表示させる
+            // $validatedData = $request->validate([
+            //     'recievedMessage' => 'required|max:255',
+            // ]);
 
-            // 3. 返信メッセージを返信先に送信
-            $deliverer->reply($recievedMessage->getReplyToken(), $replyMessage);
+            // Modelを作成
+            $Message = new Message;
+            $Message->message = $recievedMessage->getText();
+            $Message->save();
         }
 
         return response()->json(['message' => 'received']);

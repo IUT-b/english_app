@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\QuizController;
+use App\Http\Controllers\EnglishController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,3 +21,4 @@ Route::get('/', function () {
 
 
 Route::resource('quizzes', QuizController::class);
+Route::resource('messages', EnglishController::class);
